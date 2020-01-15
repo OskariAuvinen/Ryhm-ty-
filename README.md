@@ -1,0 +1,2 @@
+# Ryhm-ty-
+työskennellään ryhmässä
