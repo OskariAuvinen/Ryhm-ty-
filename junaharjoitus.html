@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Junat</title>
+    <script src="asematiedot.js"></script>
+    <style>
+        table { width: 90%; margin: 0.2em auto;}
+        tr:nth-of-type(2n) {background: palegoldenrod;}
+        tr:nth-of-type(2n+1) {background: ghostwhite;}
+        .piilo {display: none;}
+    </style>
+</head>
+
+<body>
+    <h1>Junat</h1>
+    <div>
+            <p>Lähtöasema: <input type="text" placeholder="HKI" id="lahto"/> <span class="piilo" id="lahtovirhe">(Virheellinen asema =&gt; Helsinki)</span></p>
+            <p>Määräasema: <input type="text" placeholder="TPE" id="maara"/> <span class="piilo" id="maaravirhe">(Virheellinen asema =&gt; Tampere)</span></p>
+            <p><button id="nappi" type="button">Hae</button></p>
+    </div>
+    <h3 id="matka"></h3>
+    <table >
+            <thead>
+                <tr>
+                    <th>Juna</th><th>Lähtee</th><th>Saapuu</th><th>Alkuasema</th><th>Pääteasema</th>
+                </tr>
+            </thead>
+            <tbody id="aikataulut"></tbody>
+    </table>
+    <script>
+        var xhr = new XMLHttpRequest();
+        var aikataulurivit = document.getElementById('aikataulut');
+        var lahtoInput = document.getElementById('lahto');
+        var maaraInput = document.getElementById('maara');
+        var lahtovirhe = document.getElementById('lahtovirhe');
+        var maaravirhe = document.getElementById('maaravirhe');
+        var matkaotsake = document.getElementById('matka');
+        var lahto;
+        var maara;
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var taulukko = JSON.parse(xhr.responseText);
+                    naytaTulokset(taulukko);
+                }
+            }
+        }
+        function hae() {
+            if (!(lahto = asemaKoodi(lahtoInput.value))) { 
+                lahto = 'HKI';
+                lahtovirhe.classList.remove('piilo');
+            } else {
+                lahtovirhe.classList.add('piilo');
+            }
+            if (!(maara = asemaKoodi(maaraInput.value))) { 
+                maara = 'TPE';
+                maaravirhe.classList.remove('piilo');
+            } else {
+                maaravirhe.classList.add('piilo');
+            }
+            var url = `https://rata.digitraffic.fi/api/v1/live-trains/station/${lahto}/${maara}`;
+            xhr.open('GET', url);
+            xhr.send();
+        }
+
+        function naytaTulokset(tulokset) {
+            function haeAsemarivi(juna, asema, saapuu) {
+                var rivit = juna.timeTableRows;
+                for(var i = 0 ; i < rivit.length ; ++i) {
+                    if (rivit[i].stationShortCode === asema) {
+                        if (saapuu && rivit[i].type === 'ARRIVAL')
+                            return rivit[i];
+                        else if (rivit[i].type === 'DEPARTURE')
+                            return rivit[i];
+                    }
+                }
+            }
+
+            function luoTaulurivit(junatunnus, lahtoaika, maaraaika, alkuAsema, maaraAsema) {
+                var tr = document.createElement('tr');
+                var tdjuna = document.createElement('td');
+                var tdlahto = document.createElement('td');
+                var tdsaapuu = document.createElement('td');
+                var tdeka = document.createElement('td');
+                var tdmaara = document.createElement('td');
+                tdjuna.innerText = junatunnus;
+                tdlahto.innerText = lahtoaika.toLocaleTimeString('fi-FI', optiot);
+                tdsaapuu.innerText = maaraaika.toLocaleTimeString('fi-FI', optiot);
+                tdeka.innerText = lyhyestaKaunis(alkuAsema);
+                tdmaara.innerText = lyhyestaKaunis(maaraAsema);
+                tr.append(tdjuna);
+                tr.append(tdlahto);
+                tr.append(tdsaapuu);
+                tr.append(tdeka);
+                tr.append(tdmaara);
+                aikataulurivit.appendChild(tr);
+            }
+            
+            // Tyhjennä (mahdolliset) vanhat tulokset
+            while (aikataulurivit.lastChild) {
+                aikataulurivit.removeChild(aikataulurivit.lastChild);
+            }
+
+            var optiot = {hour: '2-digit', minute:'2-digit', hour12: false};
+            matkaotsake.innerText = `${lyhyestaKaunis(lahto)} - ${lyhyestaKaunis(maara)}`;
+            if (!tulokset) return;
+            tulokset.forEach(function(juna) {
+                var junatunnus;
+                if (juna.trainCategory === 'Commuter') {
+                    junatunnus = juna.commuterLineID;
+                } else {
+                    junatunnus = juna.trainType + juna.trainNumber;
+                }
+                var lahtoRivi = haeAsemarivi(juna, lahto);
+                var maaraRivi = haeAsemarivi(juna, maara, true);
+                var alkuasema = juna.timeTableRows[0].stationShortCode;
+                var maaraasema = juna.timeTableRows[juna.timeTableRows.length-1].stationShortCode;
+                var lahtoaika = new Date(lahtoRivi.scheduledTime);
+                var maaraaika = new Date(maaraRivi.scheduledTime);
+                luoTaulurivit(junatunnus, lahtoaika, maaraaika, alkuasema, maaraasema);
+            });
+        } 
+        
+        document.getElementById('nappi').onclick = hae;
+    </script>
+</body>
+
+</html>

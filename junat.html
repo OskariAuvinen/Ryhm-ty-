@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=devicewidth, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Document</title>
+</head>
+
+<body>
+    <h1>Kulkutietoja</h1>
+
+
+
+    <ol id="lista"></ol>
+    <table class="table wide-bottom-margin">
+        <thead>
+          <tr>
+              <th>Junanumero</th>
+              <th>Tyyppi</th>
+              <th>Lähtee</th>
+              <th>Raide</th>
+          </tr>
+        </thead>
+    <script>
+        var optiot = {hour: '2-digit', minute:'2-digit', hour12: false};
+        console.log(event.toLocaleTimeString('fi'))
+        const req = new XMLHttpRequest();
+        const lista = document.getElementById();
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                if (req.status === 200) {
+                    const taulukko = JSON.parse(xhr.responseText)
+                    // Tehdään jotakin, pyyntö on valmis
+                    console.log(taulukko);
+                    for (i = 0; i < taulukko.lenght ; i++) {
+                    const lista = document.createElement('ol');
+                    const teksti = document.createTextNode(`${juna}, ${lahtee}, ${perilla}`);
+                    print.appendChild(taulukko[i]);
+                    taulukko.append(teksti)
+                } else {
+                    alert("Pyyntö epäonnistui");
+                }
+            }
+            req.open('GET', 'https://rata.digitraffic.fi/api/v1/live-trains/station/RI/LH?=limit3');
+            req.send();
+        };
+        }
+    </script>    
+
+
+
+</body>
+
+
+</html>

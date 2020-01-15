@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=devicewidth, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Document</title>
+
+</head>
+<body>
+    <h2>Tarkista henkilötunnus</h2>
+    <div>
+       <input id="hetu">
+       <button id="nappi">Tarkista</button>
+    </div>
+    <p>Tulos: <span id="tulos"></span>
+    </p>
+    <script>
+        const tarkista = (ehdokas) =>{
+           const tulos = /^\d{6}$[-A+]\d/{3}(\d|[A-Z])$/.test(ehdokas)
+            return tulos;
+        }
+
+        document = getElemenById('nappi').onclick = () => {
+           const teksti = document.getElementById('hetu').value;
+           document.getElementById('tulos').innetText =
+                    tarkista(teksti) ? 'OIKEIN' : 'VÄÄRIN';
+        }               
+
+    </script>
+</body>
+</html>

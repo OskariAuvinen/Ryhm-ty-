@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>RegEx harjoitus 1</h1>
+    <div>
+
+        <input id="hetu" /> 
+        <button id="nappi">Tarkista</button>
+    </div>
+    <p>Tulos: <span id="tulos"></span></p>
+    <script>
+        const tarkista = (ehdokas) => {
+            const tulos = /^\d{6}[-A+]\d{3}(\d|[A-Z])$/.test(ehdokas)
+            return tulos;
+        }
+        document.getElementById('nappi').onclick = () => {
+            const teksti = document.getElementById('hetu').value;
+
+            document.getElementById('tulos').innerText = 
+                            tarkista(teksti) ? 'OIKEIN' : 'VÄÄRIN';
+        }
+    </script>
+  </body>
+</html>
